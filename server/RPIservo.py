@@ -40,7 +40,7 @@ init_pwm15 = 300
 class ServoCtrl(threading.Thread):
 
 	def __init__(self, *args, **kwargs):
-		self.sc_direction = [1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1]
+		self.sc_direction = [1,1,1,1, 1,1,1,1, 1,1,1,1, 1,-1,1,1]
 		self.initPos = [init_pwm0,init_pwm1,init_pwm2,init_pwm3,
 						init_pwm4,init_pwm5,init_pwm6,init_pwm7,
 						init_pwm8,init_pwm9,init_pwm10,init_pwm11,
