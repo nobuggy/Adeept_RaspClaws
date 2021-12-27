@@ -4,7 +4,7 @@ from enum import IntEnum
 import time
 import threading
 
-#XXX:debug import Adafruit_PCA9685
+import Adafruit_PCA9685
 
 import logging
 logger = logging.getLogger('robot')
@@ -65,14 +65,14 @@ SERVO_MAX_DCSTEP = AD002_DC_MAX - AD002_DC_MIN
 
 
 
-#XXX:debug PCA9685 = Adafruit_PCA9685.PCA9685()
-#XXX:debug PCA9685.set_pwm_freq(AD002_PWM_PERIOD_HZ)  # 50Hz
+PCA9685 = Adafruit_PCA9685.PCA9685()
+PCA9685.set_pwm_freq(AD002_PWM_PERIOD_HZ)  # 50Hz
 
 def setpwm(pwmChannel:int, value:int):
     assert 0 <= pwmChannel <= 11, f'Illegal PWM channel: {pwmChannel}'
     assert AD002_DC_MIN <= value <= AD002_DC_MAX, f'Illegal servo angle value: {value}'
     print(f'PWM{pwmChannel}={value}')
-    #XXX:debug PCA9685.set_pwm(pwmChannel, 0, value)
+    PCA9685.set_pwm(pwmChannel, 0, value)
 
     
 class Robot:
@@ -116,21 +116,21 @@ class Leg:
         self.shoulderAngle = 0
         self.ellbowAngle = 0
         
-
+NEUTRAL = (345, 255)  # Left/right
 STANCES = {
     #         Left/right
-    'N': ( 235    , 365     ),
-    'F': ( 235+100, 365+100 ),
-    'B': ( 235-100, 365-100 ),
+    'N': (   0,   0 ),
+    'F': (  30,  30 ),
+    'B': ( -30, -30 ),
 }
 
 LEG2SHOULDER_PWM = {
-    'L1': 0, 'L2':2, 'L3': 4,
-    'R1': 6, 'R2':8, 'R3': 10
+    'L1':  0, 'L2':2, 'L3': 4,
+    'R1': 10, 'R2':8, 'R3': 6
 }
 LEG2ELLBOW_PWM = {
-    'L1': 1, 'L2':3, 'L3': 5,
-    'R1': 7, 'R2':9, 'R3': 11
+    'L1':  1, 'L2':3, 'L3': 5,
+    'R1': 11, 'R2':9, 'R3': 7
 }
 
 G1 = {'L1','R2','L3'}
@@ -139,9 +139,10 @@ G2 = {'R1','L2','R3'}
 
 def set_pwm_group(grp:Set[str], stance:str):
     for leg in grp:
-        setpwm(LEG2ELLBOW_PWM[leg], STANCES[stance][int(leg[0]=='R')])
+        lr = int(leg[0]=='R')
+        setpwm(LEG2ELLBOW_PWM[leg], NEUTRAL[lr] + STANCES[stance][lr])
         
-CRAB_RIGHT = 'NN,NF,BF,BN'
+CRAB_RIGHT = 'NN,FN,FB,NB'
 
 
 class GaitEngine(threading.Thread):
